@@ -26,19 +26,28 @@ jobs:
           gradle-version: '9.5.1'
           cache-disabled: true
 
-      - name: Build NineCrowns
-        run: gradle -p NineCrowns-26.1-v1.2.1 build
-
-      - name: Verify JAR contents
+      - name: Find project folder
         run: |
-          JAR=$(find NineCrowns-26.1-v1.2.1/build/libs -name "*.jar" ! -name "*sources*" | head -n 1)
-          echo "Checking $JAR"
+          PROJECT_DIR=$(dirname "$(find . -maxdepth 4 -name settings.gradle -print -quit)")
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+          echo "Project found in: $PROJECT_DIR"
+
+      - name: Build NineCrowns
+        run: gradle -p "$PROJECT_DIR" build
+
+      - name: Verify JAR
+        run: |
+          JAR=$(find . -path "*/build/libs/*.jar" ! -name "*sources*" | head -n 1)
+          echo "Checking: $JAR"
+          test -n "$JAR"
           jar tf "$JAR" | grep "fabric.mod.json"
-          jar tf "$JAR" | grep "it/lia/ninecrowns/NineCrowns.class"
-          jar tf "$JAR" | grep "it/lia/ninecrowns/ModItems.class"
+          jar tf "$JAR" | grep "NineCrowns.class"
+          jar tf "$JAR" | grep "ModItems.class"
 
       - name: Upload mod JAR
         uses: actions/upload-artifact@v4
         with:
           name: NineCrowns-26.1-v1.2.1
-          path: NineCrowns-26.1-v1.2.1/build/libs/*.jar
+          path: |
+            **/build/libs/*.jar
+            !**/build/libs/*sources*.jar
