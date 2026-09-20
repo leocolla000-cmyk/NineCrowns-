@@ -1,4 +1,4 @@
-- name: Find project folder
+name: Find project folder
   run: |
     PROJECT_DIR=$(dirname "$(find . -maxdepth 4 -name settings.gradle -print -quit)")
     echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
